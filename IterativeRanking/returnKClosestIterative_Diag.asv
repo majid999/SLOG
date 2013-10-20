@@ -1,0 +1,90 @@
+function [ closest] = returnKClosestIterative_Diag(maxIter, E,  i,xi, X, M,w,Mlocal, K,c,alpha) %frac
+%UNTITLED2 Summary of this function goes here
+%   Detailed explanation goes here
+
+
+    xi= normr(xi);
+    X = normr(X);
+
+   T = sparse(E(:,1),E(:,2),1);
+
+   invT = sparse(E(:,2),E(:,1),1);
+   
+
+   
+   trainind = E(E(:,1) == i, 2);
+   preD = zeros(1,size(X,1));
+    
+   d = (xi.*Mlocal)*X';
+   
+   mx = max(d);
+   mn = min(d);
+   
+   if  ~isempty(trainind)
+       preD = 0;
+   else
+       preD = (d-mn)/(mx-mn); 
+   end
+   
+   preD(i,preD(i,:)<=c) = 0;
+   preD(i, preD(i,:)>c) = d(preD(i,:)>c);
+   
+   preD(i,trainind) = 1;
+   
+    
+    
+    
+    
+    
+    it=1;
+    
+    
+        
+    sim = (xi.*M)*X';
+    
+    for counter=1:maxIter,
+        
+        
+        
+        fr = zeros(size(X,1),2);
+        
+        it = it+1;
+    
+
+
+        fr(:,1) = preD(i,:)*T;
+        fr(:,2) = preD(i,:)*invT;
+
+        fri = w(2:3)*fr';
+        fri = alpha*fri;
+        d = sim+fri+w(4);
+        
+        mx = max(d);
+        mn = min(d);
+        
+        if (mx-mn) == 0
+            preD(i,:) = 0;
+        else
+            preD(i,:) = (d-mn)/(mx-mn); 
+        end
+        
+       
+        preD(i,preD(i,:)<= c) = 0;
+        preD(i, preD(i,:)>c) = d(preD(i,:)>c);
+        preD(i,trainind) = 1;
+        d(i) = 0;
+        d(trainind) = 0;
+        
+        
+        [val ind] = sort(d,'descend');
+        closest = ind(1:K);
+            
+
+    
+    end
+    
+    
+end
+
+
+
